@@ -1,36 +1,43 @@
 pipeline {
     agent any
-    parameters{
+    parameters {
         choice(name: "branch", choices: ["production", "staging", "development"], description: "Sample multi-choice parameter")
-
     }
     stages {
-        stage('Git clone with choice ') {
+        stage('Git clone with choice') {
             steps {
-                script{
-                    if (params.branch == 'production' ){
-                        echo " production"
-                        git branch:'main' , url: 'https://github.com/NuthChanReaksa/jenkinslib-reaksa'
-                    } else if (params.branch == 'staging'){
-                        echo " staging"
-                        git branch:'master' , url: 'https://github.com/NuthChanReaksa/ecommerce-003-cstad'
-
+                script {
+                    if (params.branch == 'production') {
+                        echo "production"
+                        git branch: 'main', url: 'https://github.com/NuthChanReaksa/jenkinslib-reaksa'
+                    } else if (params.branch == 'staging') {
+                        echo "staging"
+                        git branch: 'master', url: 'https://github.com/NuthChanReaksa/jenkinslib-reaksa'
                     } else {
-                        echo " development"
-                        git branch:'developer' , url: 'https://github.com/NuthChanReaksa/mini-project-02'
-
+                        echo "development"
+                        git branch: 'developer', url: 'https://github.com/NuthChanReaksa/jenkinslib-reaksa'
                     }
                 }
             }
         }
-        stage('build with dockerfile'){
-            steps{
-                sh 'docker build -t reactwithchoice:{BUILD_NUMBER} -f react-dockerfile .'
+        stage('build with dockerfile') {
+            steps {
+                script {
+                    def buildNumber = env.BUILD_NUMBER
+                    sh """
+                        docker build -t reactwithchoice:${buildNumber} -f react-dockerfile .
+                    """
+                }
             }
         }
-        stage('deploy'){
-            steps{
-                sh 'docker run -d -p 8086:80 reactwithchoice:{BUILD_NUMBER} '
+        stage('deploy') {
+            steps {
+                script {
+                    def buildNumber = env.BUILD_NUMBER
+                    sh """
+                        docker run -d -p 8086:80 reactwithchoice:${buildNumber}
+                    """
+                }
             }
         }
     }
